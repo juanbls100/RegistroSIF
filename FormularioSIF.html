@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Visitas SIF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Estilos Generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #e0f2f7; /* Azul muy claro */
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            padding: 0; /* Eliminado padding para que el header ocupe todo el ancho */
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Para que el border-radius se aplique al header */
+        }
+
+        .form-header {
+            background-color: #0056b3; /* Azul oscuro para el encabezado */
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            border-bottom: 5px solid #007bff; /* Línea de contraste */
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .form-header .logo-placeholder {
+            margin-bottom: 20px;
+        }
+
+        .form-header .logo-placeholder img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-header h1 {
+            color: white;
+            margin-bottom: 0;
+            font-size: 2.8em;
+            position: relative;
+        }
+
+        .form-header h1::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background-color: #e0f2f7; /* Línea blanca para contraste */
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        .form-body {
+            padding: 40px; /* Padding para el contenido del formulario */
+        }
+
+        /* Estilos del Formulario */
+        .form-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #004085; /* Azul oscuro */
+            font-size: 1.1em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #a8d5e5; /* Azul claro */
+            border-radius: 8px;
+            font-size: 1em;
+            color: #555;
+            box-sizing: border-box; /* Asegura que el padding no aumente el ancho */
+            transition: all 0.3s ease;
+            background-color: #f8fcff;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff; /* Azul brillante en foco */
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 10px 0;
+        }
+
+        .radio-group label, .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            color: #333;
+            cursor: pointer;
+            margin-bottom: 0; /* Anula el margen por defecto de la etiqueta */
+        }
+
+        .radio-group input[type="radio"],
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2); /* Aumentar el tamaño de los radios/checkboxes */
+            accent-color: #007bff; /* Color de acento para radios/checkboxes */
+        }
+
+        /* Botones */
+        .button-group {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 20px; /* Espacio debajo de los botones */
+        }
+
+        .button-group button {
+            background-color: #007bff; /* Azul brillante */
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Añadir box-shadow a la transición */
+            margin: 0 10px;
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3); /* Sombra más pronunciada */
+        }
+
+        .button-group button:hover {
+            background-color: #0056b3; /* Azul oscuro al pasar el mouse */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4); /* Sombra más grande al pasar el mouse */
+        }
+
+        .button-group button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); /* Sombra al hacer click */
+        }
+
+        /* Ocultar/Mostrar secciones condicionalmente */
+        .hidden {
+            display: none;
+        }
+
+        /* Estilos para el contenido del PDF (oculto en pantalla) */
+        #pdfContent {
+            padding: 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background-color: #ffffff;
+        }
+
+        #pdfContent h2 {
+            text-align: center;
+            color: #004085;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        #pdfContent .pdf-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #a8d5e5;
+            border-radius: 8px;
+            background-color: #f8fcff;
+        }
+
+        #pdfContent .pdf-section h3 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        #pdfContent p {
+            margin: 8px 0;
+            font-size: 1em;
+        }
+
+        #pdfContent p strong {
+            color: #004085;
+            margin-right: 5px;
+        }
+
+        /* Estilos Responsivos */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+            }
+            .form-header {
+                padding: 20px 25px;
+            }
+            .form-header h1 {
+                font-size: 2.2em;
+            }
+            .form-body {
+                padding: 25px;
+            }
+            .form-group label {
+                font-size: 1em;
+            }
+            .form-group input[type="text"],
+            .form-group input[type="date"],
+            .form-group select,
+            .form-group textarea {
+                padding: 10px 12px;
+                font-size: 0.95em;
+            }
+            .button-group button {
+                padding: 12px 20px;
+                font-size: 1em;
+                margin: 0 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px auto;
+            }
+            .form-header {
+                padding: 15px 15px;
+            }
+            .form-header h1 {
+                font-size: 1.8em;
+            }
+            .form-body {
+                padding: 15px;
+            }
+            .radio-group, .checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .button-group button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-header">
+            <div class="logo-placeholder">
+                <img src="https://via.placeholder.com/150x80?text=Logo+SIF" alt="Logo SIF">
+            </div>
+            <h1>Registro de Visitas SIF</h1>
+        </div>
+
+        <div class="form-body">
+            <form id="visitaForm">
+                <div class="form-group">
+                    <label for="fechaVisita">Fecha de Visita:<span style="color: red;">*</span></label>
+                    <input type="date" id="fechaVisita" name="fechaVisita" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Visita:<span style="color: red;">*</span></label>
+                    <div class="radio-group" id="tipoVisitaGroup">
+                        <label>
+                            <input type="radio" name="tipoVisita" value="Visita 360"> Visita 360
+                        </label>
+                        <label>
+                            <input type="radio" name="tipoVisita" value="Visita especial"> Visita Especial
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="empresa">Empresa:<span style="color: red;">*</span></label>
+                    <select id="empresa" name="empresa" required>
+                        <option value="">Selecciona una empresa</option>
+                        <option value="Bancoppel">Bancoppel</option>
+                        <option value="Afore Coppel">Afore Coppel</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="region">Región:<span style="color: red;">*</span></label>
+                    <select id="region" name="region" required>
+                        <option value="">Selecciona una región</option>
+                        <option value="GDLJ II">GDLJ II</option>
+                        <option value="MTRY I">MTRY I</option>
+                        <option value="MTRY II">MTRY II</option>
+                        <option value="VLLH">VLLH</option>
+                        <option value="MXCL">MXCL</option>
+                        <option value="TXCC">TXCC</option>
+                        <option value="PBLA">PBLA</option>
+                        <option value="CDJZ">CDJZ</option>
+                        <option value="LMCH">LMCH</option>
+                        <option value="CTLZ">CTLZ</option>
+                        <option value="HMLO">HMLO</option>
+                        <option value="LEON">LEON</option>
+                        <option value="TOLC">TOLC</option>
+                        <option value="SNLP">SNLP</option>
+                        <option value="CLCN">CLCN</option>
+                        <option value="OAXC">OAXC</option>
+                        <option value="MRDA">MRDA</option>
+                        <option value="IZTP">IZTP</option>
+                        <option value="TCMC">TCMC</option>
+                        <option value="IXTP">IXTP</option>
+                        <option value="GPLC">GPLC</option>
+                        <option value="GDLJ I">GDLJ I</option>
+                        <option value="AZCPx">AZCPx</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado">Estado:<span style="color: red;">*</span></label>
+                    <select id="estado" name="estado" required>
+                        <option value="">Selecciona un estado</option>
+                        <option value="Edo. de México">Edo. de México</option>
+                        <option value="Hidalgo">Hidalgo</option>
+                        <option value="Puebla">Puebla</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sucursal">Sucursal:<span style="color: red;">*</span></label>
+                    <select id="sucursal" name="sucursal" required disabled>
+                        <option value="">Selecciona un estado primero</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de Centro:<span style="color: red;">*</span></label>
+                    <div class="radio-group" id="tipoCentroGroup">
+                        <label>
+                            <input type="radio" name="tipoCentro" value="Formato completo"> Formato Completo
+                        </label>
+                        <label>
+                            <input type="radio" name="tipoCentro" value="Staff"> Staff
+                        </label>
+                        <label>
+                            <input type="radio" name="tipoCentro" value="Zapateria"> Zapatería
+                        </label>
+                        <label>
+                            <input type="radio" name="tipoCentro" value="Coppel Digital"> Coppel Digital
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombreGerente">Nombre del Gerente:<span style="color: red;">*</span></label>
+                    <input type="text" id="nombreGerente" name="nombreGerente" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombreAgremiado">Nombre del Agremiado:<span style="color: red;">*</span></label>
+                    <input type="text" id="nombreAgremiado" name="nombreAgremiado" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Estatus de la Plática:<span style="color: red;">*</span></label>
+                    <div class="radio-group" id="estatusPlaticaGroup">
+                        <label>
+                            <input type="radio" name="estatusPlatica" value="Se realizó"> Se realizó
+                        </label>
+                        <label>
+                            <input type="radio" name="estatusPlatica" value="Descanso"> Descanso
+                        </label>
+                        <label>
+                            <input type="radio" name="estatusPlatica" value="Vacaciones"> Vacaciones
+                        </label>
+                        <label>
+                            <input type="radio" name="estatusPlatica" value="Incapacidad"> Incapacidad
+                        </label>
+                        <label>
+                            <input type="radio" name="estatusPlatica" value="Otro" id="estatusOtro"> Otro
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="motivoOtroContainer">
+                    <label for="motivoOtro">Especificar Motivo:<span style="color: red;">*</span></label>
+                    <input type="text" id="motivoOtro" name="motivoOtro">
+                </div>
+
+                <div class="form-group">
+                    <label>Reportó Situación:<span style="color: red;">*</span></label>
+                    <div class="radio-group" id="reportoSituacionGroup">
+                        <label>
+                            <input type="radio" name="reportoSituacion" value="Si" id="reportoSituacionSi"> Sí
+                        </label>
+                        <label>
+                            <input type="radio" name="reportoSituacion" value="No" id="reportoSituacionNo"> No
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="situacionContainer">
+                    <label for="tipoSituacion">Tipo de Situación:<span style="color: red;">*</span></label>
+                    <select id="tipoSituacion" name="tipoSituacion">
+                        <option value="">Selecciona un tipo de situación</option>
+                        <option value="Problema Laboral">Problema Laboral</option>
+                        <option value="Acoso">Acoso</option>
+                        <option value="Incumplimiento Normativo">Incumplimiento Normativo</option>
+                        <option value="Sugerencia">Sugerencia</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+
+                    <label for="detalleSituacion" style="margin-top: 15px;">Detalle de la Situación:<span style="color: red;">*</span></label>
+                    <textarea id="detalleSituacion" name="detalleSituacion" rows="4"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit">Guardar</button>
+                    <button type="button" id="generarPdfBtn">Generar PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="pdfContent" style="position: absolute; left: -9999px; top: -9999px;">
+        <div style="text-align: center; padding: 20px; background-color: #0056b3; color: white; border-bottom: 5px solid #007bff;">
+            <img src="https://via.placeholder.com/150x80?text=Logo+SIF" alt="Logo SIF" style="max-width: 120px; height: auto; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+            <h2 style="color: white; margin: 0; font-size: 2.2em;">Informe de Visita Sindical SIF</h2>
+            <p style="margin-top: 10px; font-size: 1.1em;">Detalle de la visita a centros de trabajo</p>
+        </div>
+
+        <div style="padding: 30px; background-color: #ffffff;">
+            <div class="pdf-section">
+                <h3>Información General de la Visita</h3>
+                <p><strong>Fecha de Visita:</strong> <span id="pdfFechaVisita"></span></p>
+                <p><strong>Tipo de Visita:</strong> <span id="pdfTipoVisita"></span></p>
+                <p><strong>Empresa:</strong> <span id="pdfEmpresa"></span></p>
+                <p><strong>Región:</strong> <span id="pdfRegion"></span></p>
+                <p><strong>Estado:</strong> <span id="pdfEstado"></span></p>
+                <p><strong>Sucursal:</strong> <span id="pdfSucursal"></span></p>
+                <p><strong>Tipo de Centro:</strong> <span id="pdfTipoCentro"></span></p>
+            </div>
+
+            <div class="pdf-section">
+                <h3>Detalles del Personal</h3>
+                <p><strong>Nombre del Gerente:</strong> <span id="pdfNombreGerente"></span></p>
+                <p><strong>Nombre del Agremiado:</strong> <span id="pdfNombreAgremiado"></span></p>
+            </div>
+
+            <div class="pdf-section">
+                <h3>Estatus de la Plática</h3>
+                <p><strong>Estatus:</strong> <span id="pdfEstatusPlatica"></span></p>
+                <p id="pdfMotivoOtroContainer" class="hidden"><strong>Motivo (Otro):</strong> <span id="pdfMotivoOtro"></span></p>
+            </div>
+
+            <div class="pdf-section">
+                <h3>Reporte de Situación</h3>
+                <p><strong>Reportó Situación:</strong> <span id="pdfReportoSituacion"></span></p>
+                <div id="pdfSituacionContainer" class="hidden">
+                    <p><strong>Tipo de Situación:</strong> <span id="pdfTipoSituacion"></span></p>
+                    <p><strong>Detalle de la Situación:</strong> <span id="pdfDetalleSituacion"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Obtener referencias a los elementos del DOM
+        const estadoSelect = document.getElementById('estado');
+        const sucursalSelect = document.getElementById('sucursal');
+        const estatusPlaticaRadios = document.querySelectorAll('input[name="estatusPlatica"]');
+        const motivoOtroContainer = document.getElementById('motivoOtroContainer');
+        const reportoSituacionRadios = document.querySelectorAll('input[name="reportoSituacion"]');
+        const situacionContainer = document.getElementById('situacionContainer');
+        const visitaForm = document.getElementById('visitaForm');
+        const generarPdfBtn = document.getElementById('generarPdfBtn');
+        const pdfContent = document.getElementById('pdfContent'); // Referencia al div de contenido del PDF
+
+        // Referencias a los grupos de radio para validación
+        const tipoVisitaGroup = document.getElementById('tipoVisitaGroup');
+        const tipoCentroGroup = document.getElementById('tipoCentroGroup');
+        const estatusPlaticaGroup = document.getElementById('estatusPlaticaGroup');
+        const reportoSituacionGroup = document.getElementById('reportoSituacionGroup');
+
+        // Objeto que mapea estados a sus respectivas sucursales
+        const sucursalesPorEstado = {
+            "Edo. de México": [
+                "189 Coacalco", "190 San Lorenzo", "200 Valle", "221 Victoria", "228 Morelos", "261 Los Héroes",
+                "349 5 de Mayo", "389 Gustavo Baz", "405 San Cristóbal", "407 Central", "451 Recursos", "472 Chapultepec",
+                "476 Sendero", "480 Pabellón", "703 Ozumbilla", "714 Palomas", "749 Bosques", "819 Villa de Las Flores",
+                "827 Tecnológico", "833 Allende", "862 Ojo de Agua", "881 Plaza Zumpango", "981 San Andrés", "1000 Zaragoza",
+                "1219 Canadá Mexipuerto", "1367 Las Huertas", "1430 Las Flores", "1432 Plaza Aragon", "1449 Cerro Gordo",
+                "1470 Montaño", "1496 16 de Septiembre", "6531 Sierra Hermosa", "6590 Paseo Ventura", "7637 Chiconautla",
+                "7655 Power Center Tecamac", "7677 Plaza Ecatepec", "7686 Acolman", "7806 Plaza Las Américas",
+                "7857 Las Brisas", "7892 Cosmopol", "7858 Paseos del bosque"
+            ],
+            "Hidalgo": [
+                "194 Plaza del Valle", "290 Del Rosal", "293 21 de marzo", "319 Plaza Universidad", "401 Las Villas",
+                "402 Juárez", "403 Progreso", "506 Plaza Ixmiquilpan", "574 Ocampo", "575 Hidalgo", "733 Plaza Bonita",
+                "771 Constitución", "781 Actopan", "816 Carranza", "825 Madero", "1129 Colegio Militar", "1194 Juárez",
+                "1434 Patio tulancingo", "1438 Gran Patio", "1491 Sahagún", "7640 Zaragoza", "7651 Bonfil",
+                "7657 Explanada Pachuca", "7733 Plaza Tizara", "7813 Guerrero"
+            ],
+            "Puebla": [
+                "366 Cabrera", "433 Hidalgo", "734 Guerrero", "1110 Zaragoza", "1249 Hidalgo", "6567 Francisco Cosio",
+                "7680 5 Oriente"
+            ]
+        };
+
+        // Función para cargar sucursales según el estado seleccionado
+        estadoSelect.addEventListener('change', () => {
+            const estadoSeleccionado = estadoSelect.value;
+            sucursalSelect.innerHTML = '<option value="">Selecciona una sucursal</option>'; // Limpiar opciones anteriores
+            sucursalSelect.disabled = true; // Deshabilitar por defecto
+
+            if (estadoSeleccionado && sucursalesPorEstado[estadoSeleccionado]) {
+                sucursalesPorEstado[estadoSeleccionado].forEach(sucursal => {
+                    const option = document.createElement('option');
+                    option.value = sucursal;
+                    option.textContent = sucursal;
+                    sucursalSelect.appendChild(option);
+                });
+                sucursalSelect.disabled = false; // Habilitar si hay sucursales
+            }
+            // Asegurar que la validación se dispare si el campo es requerido
+            sucursalSelect.reportValidity();
+        });
+
+        // Lógica para mostrar/ocultar el campo "Especificar Motivo" cuando se selecciona "Otro" en Estatus de la Plática
+        estatusPlaticaRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (document.getElementById('estatusOtro').checked) {
+                    motivoOtroContainer.classList.remove('hidden');
+                    motivoOtroContainer.querySelector('input').setAttribute('required', 'required');
+                } else {
+                    motivoOtroContainer.classList.add('hidden');
+                    motivoOtroContainer.querySelector('input').removeAttribute('required');
+                    motivoOtroContainer.querySelector('input').value = ''; // Limpiar el campo
+                }
+            });
+        });
+
+        // Lógica para mostrar/ocultar la sección de "Situación" cuando se selecciona "Sí" en Reportó Situación
+        reportoSituacionRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (document.getElementById('reportoSituacionSi').checked) {
+                    situacionContainer.classList.remove('hidden');
+                    // Hacer los campos de situación requeridos solo si la sección es visible
+                    situacionContainer.querySelector('select').setAttribute('required', 'required');
+                    situacionContainer.querySelector('textarea').setAttribute('required', 'required');
+                } else {
+                    situacionContainer.classList.add('hidden');
+                    // Quitar el atributo required si la sección está oculta
+                    situacionContainer.querySelector('select').removeAttribute('required');
+                    situacionContainer.querySelector('textarea').removeAttribute('required');
+                    situacionContainer.querySelector('select').value = ''; // Limpiar campos
+                    situacionContainer.querySelector('textarea').value = '';
+                }
+            });
+        });
+
+        // Función para validar grupos de radio buttons
+        function validateRadioGroup(groupElement, groupName) {
+            const radios = groupElement.querySelectorAll(`input[name="${groupName}"]`);
+            let isChecked = false;
+            for (const radio of radios) {
+                if (radio.checked) {
+                    isChecked = true;
+                    break;
+                }
+            }
+            if (!isChecked) {
+                // Formatear el nombre del grupo para el mensaje
+                const formattedGroupName = groupName.replace(/([A-Z])/g, ' $1').replace('tipo', 'Tipo de ').replace('estatus', 'Estatus de la ').replace('reporto', 'Reportó ').trim();
+                displayMessage(`Por favor, selecciona una opción para "${formattedGroupName}".`, "error");
+                // Intenta enfocar el primer radio del grupo para que el usuario lo vea
+                if (radios.length > 0) radios[0].focus();
+                return false;
+            }
+            return true;
+        }
+
+        // Función para mostrar mensajes al usuario (reemplazo de alert())
+        function displayMessage(message, type) {
+            let messageBox = document.getElementById('messageBox');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'messageBox';
+                document.body.appendChild(messageBox);
+            }
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`; // Añadir clase para estilo (success/error)
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000); // Ocultar después de 3 segundos
+        }
+
+        // Añadir estilos para el messageBox (si no existen)
+        if (!document.getElementById('messageBoxStyle')) {
+            const style = document.createElement('style');
+            style.id = 'messageBoxStyle';
+            style.innerHTML = `
+                .message-box {
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 1000;
+                    display: none; /* Oculto por defecto */
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    animation: fadeInOut 3s forwards;
+                }
+                .message-box.success {
+                    background-color: #28a745; /* Verde para éxito */
+                }
+                .message-box.error {
+                    background-color: #dc3545; /* Rojo para error */
+                }
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Manejo del envío del formulario (para el botón Guardar)
+        visitaForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Evitar el envío por defecto del formulario
+
+            // Validar campos obligatorios (HTML5 nativo)
+            if (!visitaForm.reportValidity()) {
+                displayMessage("Por favor, completa todos los campos obligatorios.", "error");
+                return; // Detener si hay campos HTML5 no válidos
+            }
+
+            // Validar grupos de radio buttons manualmente
+            if (!validateRadioGroup(tipoVisitaGroup, 'tipoVisita')) return;
+            if (!validateRadioGroup(tipoCentroGroup, 'tipoCentro')) return;
+            if (!validateRadioGroup(estatusPlaticaGroup, 'estatusPlatica')) return;
+            if (!validateRadioGroup(reportoSituacionGroup, 'reportoSituacion')) return;
+
+            // Recolectar todos los datos del formulario
+            const formData = new FormData(visitaForm);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            // Lógica para limpiar datos según la selección
+            if (data.estatusPlatica !== 'Otro') {
+                delete data.motivoOtro;
+            }
+            if (data.reportoSituacion !== 'Si') {
+                delete data.tipoSituacion;
+                delete data.detalleSituacion;
+            }
+
+            console.log("Datos del formulario a guardar:", data);
+            displayMessage("Datos guardados (revisa la consola para verlos).", "success");
+            // Aquí integrarías la lógica para enviar los datos a un backend
+        });
+
+        // Funcionalidad de generación de PDF usando html2pdf.js
+        generarPdfBtn.addEventListener('click', () => {
+            // Validar campos obligatorios antes de generar PDF
+            if (!visitaForm.reportValidity()) {
+                displayMessage("Por favor, completa todos los campos obligatorios antes de generar el PDF.", "error");
+                return; // Detener si hay campos HTML5 no válidos
+            }
+
+            // Validar grupos de radio buttons manualmente
+            if (!validateRadioGroup(tipoVisitaGroup, 'tipoVisita')) return;
+            if (!validateRadioGroup(tipoCentroGroup, 'tipoCentro')) return;
+            if (!validateRadioGroup(estatusPlaticaGroup, 'estatusPlatica')) return;
+            if (!validateRadioGroup(reportoSituacionGroup, 'reportoSituacion')) return;
+
+            displayMessage("Generando PDF...", "success");
+
+            // Recolectar datos para el PDF
+            const formData = new FormData(visitaForm);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            // Rellenar el contenido del PDF con los datos del formulario
+            document.getElementById('pdfFechaVisita').textContent = data.fechaVisita;
+            document.getElementById('pdfTipoVisita').textContent = data.tipoVisita;
+            document.getElementById('pdfEmpresa').textContent = data.empresa;
+            document.getElementById('pdfRegion').textContent = data.region;
+            document.getElementById('pdfEstado').textContent = data.estado;
+            document.getElementById('pdfSucursal').textContent = data.sucursal;
+            document.getElementById('pdfTipoCentro').textContent = data.tipoCentro;
+            document.getElementById('pdfNombreGerente').textContent = data.nombreGerente;
+            document.getElementById('pdfNombreAgremiado').textContent = data.nombreAgremiado;
+            document.getElementById('pdfEstatusPlatica').textContent = data.estatusPlatica;
+
+            // Manejo de campos condicionales para el PDF
+            if (data.estatusPlatica === 'Otro') {
+                document.getElementById('pdfMotivoOtroContainer').classList.remove('hidden');
+                document.getElementById('pdfMotivoOtro').textContent = data.motivoOtro;
+            } else {
+                document.getElementById('pdfMotivoOtroContainer').classList.add('hidden');
+                document.getElementById('pdfMotivoOtro').textContent = '';
+            }
+
+            document.getElementById('pdfReportoSituacion').textContent = data.reportoSituacion;
+            if (data.reportoSituacion === 'Si') {
+                document.getElementById('pdfSituacionContainer').classList.remove('hidden');
+                document.getElementById('pdfTipoSituacion').textContent = data.tipoSituacion;
+                document.getElementById('pdfDetalleSituacion').textContent = data.detalleSituacion;
+            } else {
+                document.getElementById('pdfSituacionContainer').classList.add('hidden');
+                document.getElementById('pdfTipoSituacion').textContent = '';
+                document.getElementById('pdfDetalleSituacion').textContent = '';
+            }
+
+            const element = document.getElementById('pdfContent'); // Elemento oculto a convertir a PDF
+
+            // Configuración para html2pdf
+            const opt = {
+                margin:       0.5, // Márgenes en pulgadas
+                filename:     'registro_visita_SIF.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Asegurarse de que el contenido del PDF sea visible antes de generarlo
+            // Se usa setTimeout para asegurar que el DOM ha procesado la eliminación de la clase 'hidden'
+            pdfContent.style.position = 'static'; // Hacerlo parte del flujo normal
+            pdfContent.style.left = '0';
+            pdfContent.style.top = '0';
+            pdfContent.classList.remove('hidden');
+
+
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Ocultar el contenido del PDF de nuevo después de la generación
+                    pdfContent.classList.add('hidden');
+                    pdfContent.style.position = 'absolute'; // Volver a ocultar fuera de la vista
+                    pdfContent.style.left = '-9999px';
+                    pdfContent.style.top = '-9999px';
+                });
+            }, 50); // Pequeño retraso para asegurar que el DOM se actualice
+        });
+
+        // Inicializar el estado de la sucursal y los campos condicionales al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Disparar el evento change del estado para inicializar la sucursal si ya hay un valor
+            const event = new Event('change');
+            estadoSelect.dispatchEvent(event);
+
+            // Asegurar que el campo "Otro" se oculte si no está seleccionado al cargar
+            if (!document.getElementById('estatusOtro').checked) {
+                motivoOtroContainer.classList.add('hidden');
+            }
+
+            // Asegurar que la sección de situación se oculte si no está seleccionada al cargar
+            if (!document.getElementById('reportoSituacionSi').checked) {
+                situacionContainer.classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
